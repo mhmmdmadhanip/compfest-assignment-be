@@ -8,6 +8,11 @@ export class RegisterUserRequest {
     token?: string;
 }
 
+export class LoginUserRequest {
+    email: string;
+    password: string;
+}
+
 export class UserResponse {
     email: string;
     fullName: string;

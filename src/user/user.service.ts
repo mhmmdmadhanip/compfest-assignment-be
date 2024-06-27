@@ -3,9 +3,10 @@ import { Logger } from 'winston';
 import { WINSTON_MODULE_PROVIDER } from "nest-winston";
 import { PrismaService } from "../common/prisma.service";
 import { ValidationService } from "../common/validation.service";
-import { RegisterUserRequest, UserResponse } from "../model/user.model";
+import { LoginUserRequest, RegisterUserRequest, UserResponse } from "../model/user.model";
 import { UserValidation } from "./user.validation";
 import * as bcrypt from 'bcrypt';
+import { v4 as uuid } from 'uuid'; 
 
 @Injectable()
 export class UserService{
@@ -48,6 +49,47 @@ export class UserService{
             phoneNumber: user.phoneNumber,
             role: user.role
         };
+    }
+
+    async login(request: LoginUserRequest) : Promise<UserResponse> {
+        this.logger.info(`UserService.login(${JSON.stringify(request)})`)
+        const loginRequest = this.validationService.validate (
+            UserValidation.LOGIN,
+            request
+        )
+
+        const user = await this.prismaService.user.findUnique({
+            where: {
+                email: loginRequest.email
+            }
+        })
+
+        if(!user) {
+            throw new HttpException('Username or password is invalid', 401);
+        }
+        
+        const isPasswordValid = await bcrypt.compare(loginRequest.password, user.password);
+        
+        if(!isPasswordValid) {
+            throw new HttpException('Username or password is invalid', 401);
+        }
+
+        await this.prismaService.user.update({
+            where: {
+                email: loginRequest.email
+            },
+            data: {
+                token: uuid()
+            }
+        })
+
+        return {
+            email: user.email,
+            fullName: user.fullName,
+            phoneNumber: user.phoneNumber,
+            role: user.role,
+            token: user.token
+        }
     }
 
 }
