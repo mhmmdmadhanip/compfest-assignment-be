@@ -3,10 +3,12 @@ import { Logger } from 'winston';
 import { WINSTON_MODULE_PROVIDER } from "nest-winston";
 import { PrismaService } from "../common/prisma.service";
 import { ValidationService } from "../common/validation.service";
-import { LoginUserRequest, RegisterUserRequest, UserResponse } from "../model/user.model";
+import { LoginUserRequest, RegisterUserRequest, UpdateUserRequest, UserResponse } from "../model/user.model";
 import { UserValidation } from "./user.validation";
 import * as bcrypt from 'bcrypt';
 import { v4 as uuid } from 'uuid'; 
+import { User } from ".prisma/client";
+import * as request from 'supertest';
 
 @Injectable()
 export class UserService{
@@ -18,7 +20,7 @@ export class UserService{
     ) {}
 
     async register(request: RegisterUserRequest) : Promise<UserResponse> {
-        this.logger.info(`Register new user ${JSON.stringify(request)}`);
+        this.logger.debug(`Register new user ${JSON.stringify(request)}`);
         const registerRequest = this.validationService.validate (
             UserValidation.REGISTER,
             request
@@ -52,7 +54,7 @@ export class UserService{
     }
 
     async login(request: LoginUserRequest) : Promise<UserResponse> {
-        this.logger.info(`UserService.login(${JSON.stringify(request)})`)
+        this.logger.debug(`UserService.login(${JSON.stringify(request)})`)
         const loginRequest = this.validationService.validate (
             UserValidation.LOGIN,
             request
@@ -92,4 +94,62 @@ export class UserService{
         }
     }
 
+    async getUser(user: User): Promise<UserResponse> {
+        return {
+            email: user.email,
+            fullName: user.fullName,
+            phoneNumber: user.phoneNumber,
+            role: user.role,
+        }
+    }
+
+    async updateUser(user:User, request: UpdateUserRequest): Promise<UserResponse>  {
+        this.logger.debug(`UserService.update( ${JSON.stringify(user)} , ${JSON.stringify(request)} )`)
+
+        const updateRequest: UpdateUserRequest = this.validationService.validate(UserValidation.UPDATE, request);
+
+        if(updateRequest.fullName) {
+            user.fullName = updateRequest.fullName;
+        }
+
+        if(updateRequest.phoneNumber) {
+            user.phoneNumber = updateRequest.phoneNumber;
+        }
+
+        if(updateRequest.password) {
+            user.password = await bcrypt.hash(updateRequest.password, 10);
+        }
+
+        const result = await this.prismaService.user.update({
+            where: {
+                email: user.email
+            },
+            data: user
+        })
+
+        return {
+            email: result.email,
+            fullName: result.fullName,
+            phoneNumber: result.phoneNumber,
+            role: result.role,
+        }
+    }
+
+    async logout(user:User): Promise<UserResponse> {
+        const result = await this.prismaService.user.update({
+            where: {
+                email: user.email
+            },
+            data: {
+                token: null
+            }
+        })
+
+        return {
+            email: result.email,
+            fullName: result.fullName,
+            phoneNumber: result.phoneNumber,
+            role: result.role,
+        }
+    }
 }

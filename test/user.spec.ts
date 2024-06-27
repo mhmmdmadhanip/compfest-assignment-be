@@ -60,6 +60,7 @@ describe('UserController', () => {
         expect(response.body.data.email).toBe('mhmmdmadhani22@gmail.com');
         expect(response.body.data.fullName).toBe('Muhammad Madhani Putra');
         expect(response.body.data.phoneNumber).toBe('085155436530');
+        expect(response.body.data.role).toBe('Customer');
     })
 
     it("should be rejected if email already exists", async () => {
@@ -111,7 +112,143 @@ describe('UserController', () => {
         expect(response.body.data.email).toBe('mhmmdmadhani22@gmail.com');
         expect(response.body.data.fullName).toBe('Muhammad Madhani Putra');
         expect(response.body.data.phoneNumber).toBe('085155436530');
+        expect(response.body.data.role).toBe('Customer');
         expect(response.body.data.token).toBeDefined();
     })
   })
+
+  describe("GET /api/users/current", () => {
+
+    beforeEach(async () => {
+      await testService.deleteUser();
+      await testService.createUser();
+    })
+
+    it("should be rejected if token is invalid", async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/users/current')
+        .set('Authorization', 'wrong');
+
+        expect(response.status).toBe(401);
+        expect(response.body.errors).toBeDefined();
+    })
+
+    it("should be able to get user", async () => {
+      const response = await request(app.getHttpServer())
+        .get('/api/users/current')
+        .set('Authorization', 'user')
+
+        expect(response.status).toBe(200);
+        expect(response.body.data.email).toBe('mhmmdmadhani22@gmail.com');
+        expect(response.body.data.fullName).toBe('Muhammad Madhani Putra');
+        expect(response.body.data.phoneNumber).toBe('085155436530');
+        expect(response.body.data.role).toBe('Customer');
+
+    })
+  })
+
+  describe("PATCH /api/users/current", () => {
+
+    beforeEach(async () => {
+      await testService.deleteUser();
+      await testService.createUser();
+    })
+
+    it("should be rejected if request is invalid", async () => {
+      const response = await request(app.getHttpServer())
+        .patch('/api/users/current')
+        .set('Authorization', 'user')
+        .send({
+          password: '',
+          fullName: '',
+          phoneNumber: '',
+        });
+
+        expect(response.status).toBe(400);
+        expect(response.body.errors).toBeDefined();
+    })
+
+    it("should be able to update name", async () => {
+      const response = await request(app.getHttpServer())
+        .patch('/api/users/current')
+        .set('Authorization', 'user')
+        .send({
+          fullName: 'Madans',
+        });
+
+        expect(response.status).toBe(200);
+        expect(response.body.data.email).toBe('mhmmdmadhani22@gmail.com');
+        expect(response.body.data.fullName).toBe('Madans');
+        expect(response.body.data.phoneNumber).toBe('085155436530');
+        expect(response.body.data.role).toBe('Customer');
+    })
+
+    it("should be able to update phone number", async () => {
+      const response = await request(app.getHttpServer())
+        .patch('/api/users/current')
+        .set('Authorization', 'user')
+        .send({
+          phoneNumber: '081219143444',
+        });
+
+        expect(response.status).toBe(200);
+        expect(response.body.data.email).toBe('mhmmdmadhani22@gmail.com');
+        expect(response.body.data.fullName).toBe('Muhammad Madhani Putra');
+        expect(response.body.data.phoneNumber).toBe('081219143444');
+        expect(response.body.data.role).toBe('Customer');
+    })
+
+    it("should be able to update password", async () => {
+      let response = await request(app.getHttpServer())
+        .patch('/api/users/current')
+        .set('Authorization', 'user')
+        .send({
+          password: 'madans22',
+        });
+
+        expect(response.status).toBe(200);
+        expect(response.body.data.email).toBe('mhmmdmadhani22@gmail.com');
+        expect(response.body.data.fullName).toBe('Muhammad Madhani Putra');
+        expect(response.body.data.phoneNumber).toBe('085155436530');
+        expect(response.body.data.role).toBe('Customer');
+
+        response = await request(app.getHttpServer())
+        .post('/api/users/login')
+        .send({
+          email: 'mhmmdmadhani22@gmail.com',
+          password: 'madans22',
+        });
+
+        expect(response.status).toBe(200);
+        expect(response.body.data.token).toBeDefined();
+    })
+  })
+
+  describe("DELETE /api/users/current", () => {
+
+    beforeEach(async () => {
+      await testService.deleteUser();
+      await testService.createUser();
+    })
+
+    it("should be rejected if token is invalid", async () => {
+      const response = await request(app.getHttpServer())
+        .delete('/api/users/current')
+        .set('Authorization', 'wrong');
+
+        expect(response.status).toBe(401);
+        expect(response.body.errors).toBeDefined();
+    })
+
+    it("should be able to logout", async () => {
+      const response = await request(app.getHttpServer())
+        .delete('/api/users/current')
+        .set('Authorization', 'user')
+
+        expect(response.status).toBe(200);
+        expect(response.body.data).toBe(true);
+
+    })
+  })
+
 });

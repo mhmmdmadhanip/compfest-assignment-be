@@ -13,6 +13,12 @@ export class LoginUserRequest {
     password: string;
 }
 
+export class UpdateUserRequest {
+    fullName?: string;
+    phoneNumber?: string;
+    password?: string;
+}
+
 export class UserResponse {
     email: string;
     fullName: string;

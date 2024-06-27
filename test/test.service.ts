@@ -22,7 +22,8 @@ export class TestService {
                 password: await bcrypt.hash('madans',10),
                 fullName: 'Muhammad Madhani Putra',
                 phoneNumber: '085155436530',
-                role: 'Customer'
+                role: 'Customer',
+                token: 'user'
             }
         })
     }
