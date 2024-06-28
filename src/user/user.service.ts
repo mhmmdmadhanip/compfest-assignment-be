@@ -8,7 +8,7 @@ import { UserValidation } from "./user.validation";
 import * as bcrypt from 'bcrypt';
 import { v4 as uuid } from 'uuid'; 
 import { User } from ".prisma/client";
-import * as request from 'supertest';
+import { Role } from "@prisma/client";
 
 @Injectable()
 export class UserService{
@@ -33,7 +33,7 @@ export class UserService{
         })
 
         if (sameEmailCount != 0) {
-            throw new HttpException('Username already exists', 400)
+            throw new HttpException('Email already exists', 400)
         }
 
         registerRequest.password = await bcrypt.hash(registerRequest.password, 10);
@@ -41,7 +41,7 @@ export class UserService{
         const user = await this.prismaService.user.create({
             data: {
                 ...registerRequest,
-                role: 'Customer',
+                role: Role.Customer,
             },
         })
 
@@ -151,5 +151,9 @@ export class UserService{
             phoneNumber: result.phoneNumber,
             role: result.role,
         }
+    }
+
+    async deleteAllUsers() {
+        await this.prismaService.user.deleteMany({});
     }
 }

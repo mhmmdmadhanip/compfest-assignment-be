@@ -53,4 +53,9 @@ export class UserController {
             data: true
         }
     }
+
+    @Delete()
+    async deleteAll() {
+        await this.userService.deleteAllUsers();
+    }
 }

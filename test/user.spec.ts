@@ -6,6 +6,7 @@ import { Logger } from 'winston';
 import { TestService } from './test.service';
 import { TestModule } from './test.module';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Role } from '@prisma/client';
 
 describe('UserController', () => {
   let app: INestApplication;
@@ -60,7 +61,7 @@ describe('UserController', () => {
         expect(response.body.data.email).toBe('mhmmdmadhani22@gmail.com');
         expect(response.body.data.fullName).toBe('Muhammad Madhani Putra');
         expect(response.body.data.phoneNumber).toBe('085155436530');
-        expect(response.body.data.role).toBe('Customer');
+        expect(response.body.data.role).toBe(Role.Customer);
     })
 
     it("should be rejected if email already exists", async () => {
@@ -112,7 +113,7 @@ describe('UserController', () => {
         expect(response.body.data.email).toBe('mhmmdmadhani22@gmail.com');
         expect(response.body.data.fullName).toBe('Muhammad Madhani Putra');
         expect(response.body.data.phoneNumber).toBe('085155436530');
-        expect(response.body.data.role).toBe('Customer');
+        expect(response.body.data.role).toBe(Role.Customer);
         expect(response.body.data.token).toBeDefined();
     })
   })
@@ -142,7 +143,7 @@ describe('UserController', () => {
         expect(response.body.data.email).toBe('mhmmdmadhani22@gmail.com');
         expect(response.body.data.fullName).toBe('Muhammad Madhani Putra');
         expect(response.body.data.phoneNumber).toBe('085155436530');
-        expect(response.body.data.role).toBe('Customer');
+        expect(response.body.data.role).toBe(Role.Customer);
 
     })
   })
@@ -180,7 +181,7 @@ describe('UserController', () => {
         expect(response.body.data.email).toBe('mhmmdmadhani22@gmail.com');
         expect(response.body.data.fullName).toBe('Madans');
         expect(response.body.data.phoneNumber).toBe('085155436530');
-        expect(response.body.data.role).toBe('Customer');
+        expect(response.body.data.role).toBe(Role.Customer);
     })
 
     it("should be able to update phone number", async () => {
@@ -195,7 +196,7 @@ describe('UserController', () => {
         expect(response.body.data.email).toBe('mhmmdmadhani22@gmail.com');
         expect(response.body.data.fullName).toBe('Muhammad Madhani Putra');
         expect(response.body.data.phoneNumber).toBe('081219143444');
-        expect(response.body.data.role).toBe('Customer');
+        expect(response.body.data.role).toBe(Role.Customer);
     })
 
     it("should be able to update password", async () => {
@@ -210,7 +211,7 @@ describe('UserController', () => {
         expect(response.body.data.email).toBe('mhmmdmadhani22@gmail.com');
         expect(response.body.data.fullName).toBe('Muhammad Madhani Putra');
         expect(response.body.data.phoneNumber).toBe('085155436530');
-        expect(response.body.data.role).toBe('Customer');
+        expect(response.body.data.role).toBe(Role.Customer);
 
         response = await request(app.getHttpServer())
         .post('/api/users/login')
@@ -248,6 +249,8 @@ describe('UserController', () => {
         expect(response.status).toBe(200);
         expect(response.body.data).toBe(true);
 
+        const checkUser = await testService.checkToken();
+        expect(checkUser.token).toBeNull();
     })
   })
 
