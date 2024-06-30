@@ -31,13 +31,13 @@ model Review {
   starRating Int
   comment String @db.VarChar(200)
   email String @db.VarChar(50)
-  serviceName String? @db.VarChar(100)
+  serviceID Int?
   branchID Int?
 
   user User @relation(fields: [email], references: [email])
-  branchService BranchService? @relation(fields: [branchID, serviceName], references: [branchID, serviceName])
+  branchService BranchService? @relation(fields: [branchID, serviceID], references: [branchID, serviceID])
 
-  @@unique([email, serviceName])
+  @@unique([email, serviceID])
   @@unique([email, branchID])
 
   @@map("reviews")
@@ -49,21 +49,21 @@ model Reservation {
   startTime DateTime
   endTime DateTime
   email String @db.VarChar(50)
-  serviceName String @db.VarChar(100)
+  serviceID Int
   branchID Int
 
   user User @relation(fields: [email], references: [email])
-  branchService BranchService @relation(fields: [branchID, serviceName], references: [branchID, serviceName])
+  branchService BranchService @relation(fields: [branchID, serviceID], references: [branchID, serviceID])
 
   @@map("reservations")
 }
 
 model Service {
-  serviceName String @id @db.VarChar(100)
+  serviceID Int @id @default(autoincrement())
+  serviceName String @unique @db.VarChar(100)
   duration Int
 
   branches BranchService[]
-
   @@map("services")
 }
 
@@ -81,14 +81,14 @@ model Branch {
 
 model BranchService {
   branchID Int
-  serviceName String @db.VarChar(100)
+  serviceID Int
   branch Branch @relation(fields: [branchID], references: [branchID])
-  service Service @relation(fields: [serviceName], references: [serviceName])
+  service Service @relation(fields: [serviceID], references: [serviceID])
 
   reservations Reservation[]
   reviews Review[]
   
-  @@id([branchID, serviceName])
+  @@id([branchID, serviceID])
   
   @@map("branchservices")
 }

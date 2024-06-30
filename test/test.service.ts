@@ -67,10 +67,29 @@ export class TestService {
                 duration: 40,
             }
         })
+
+        await this.prismaService.service.create({
+            data: {
+                serviceName: 'Unique Service',
+                duration: 40,
+            }
+        })
     }
 
     async deleteService() {
         await this.prismaService.service.deleteMany({
+            where: {
+                OR: [
+                    { serviceName: 'Test Service' },
+                    { serviceName: 'Updated' },
+                    { serviceName: 'Unique Service'}
+                ]
+            }
+        })
+    }
+
+    async getService() {
+        return await this.prismaService.service.findFirst({
             where: {
                 serviceName: 'Test Service'
             }

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Patch, Post } from "@nestjs/common";
 import { ServiceService } from "./service.service";
 import { Auth } from "../common/auth.decorator";
 import { CreateServiceRequest, ServiceResponses } from "../model/service.model";
@@ -20,19 +20,30 @@ export class ServiceController {
         }
     }
 
-    @Get()
-    async getAllServices(): Promise <WebResponse<ServiceResponses[]>> {
-        const result = await this.service.getAllServices();
+    @Get('/all')
+    @HttpCode(200)
+    async getAllServices(@Auth() user:User): Promise <WebResponse<ServiceResponses[]>> {
+        const result = await this.service.getAllServices(user);
         return {
             data: result
         }
     }
 
-    @Get(':serviceName')
-    async getService(@Param('serviceName') serviceName: string): Promise <WebResponse<ServiceResponses>> {
-        const result = await this.service.getService(serviceName);
+    @Get('/:id')
+    @HttpCode(200)
+    async getService(@Param('id', ParseIntPipe) id: number): Promise <WebResponse<ServiceResponses>> {
+        const result = await this.service.getService(id);
         return {
             data: result
+        }
+    }
+
+    @Patch('/:id')
+    @HttpCode(200)
+    async updateService(@Auth() user:User, @Body() request: CreateServiceRequest, @Param('id', ParseIntPipe) id: number): Promise <WebResponse<ServiceResponses>> {
+        const result = await this.service.updateService(user, id, request);
+        return {
+            data:result
         }
     }
 }
